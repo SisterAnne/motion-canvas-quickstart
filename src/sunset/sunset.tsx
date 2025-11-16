@@ -1,31 +1,37 @@
 import { Circle, makeScene2D } from "@motion-canvas/2d";
-import { createRef, Reference, ThreadGenerator } from "@motion-canvas/core";
+import { createRef, createSignal, linear } from "@motion-canvas/core";
 
-// ===== Sun orbit =============================================================
+// * Definitions
+const time = createSignal(0);
+const timeLimit = 5;
 
-interface Sun {
-    ref: Reference<Circle>;
-    radius: number;
+// Sun and orbit configuration
+const sun = {
+    ref: createRef<Circle>(),
+    radius: 140,
     orbit: {
-        radius: number;
-    };
-}
+        period: 1,
+        radius: 1080 / 2,
+        centroid: {
+            x: 0,
+            y: 1080 / 2,
+        },
+    },
+};
 
-function* orbitSun(sun: Sun): ThreadGenerator {}
+// ===== Helper functions ======================================================
+
+const sunXPos = createSignal(
+    () => sun.orbit.centroid.x + sun.orbit.radius * Math.cos(time())
+);
+
+const sunYPos = createSignal(
+    () => sun.orbit.centroid.y + sun.orbit.radius * Math.sin(time())
+);
 
 // ===== Driver code ===========================================================
 
 export default makeScene2D(function* (view) {
-    // * Definitions
-
-    const sun: Sun = {
-        ref: createRef<Circle>(),
-        radius: 140,
-        orbit: {
-            radius: 500,
-        },
-    };
-
     // * Scene hierarchy
     view.add(
         <>
@@ -34,13 +40,13 @@ export default makeScene2D(function* (view) {
                 ref={sun.ref}
                 height={sun.radius}
                 width={sun.radius}
-                x={sun.orbit.radius}
-                y={0}
-                fill="Red"
+                x={sunXPos}
+                y={sunYPos}
+                fill="red"
             />
         </>
     );
 
     // * Generators
-    yield* orbitSun(sun);
+    yield* time(0, 0).to(Math.PI * 2, timeLimit, linear);
 });
