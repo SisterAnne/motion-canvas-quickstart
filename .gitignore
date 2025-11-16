@@ -1,0 +1,7 @@
+# Build files
+dist
+node_modules
+output
+
+# Editor files
+.vscode
